@@ -1,0 +1,46 @@
+{
+    "name": "leedch/resource-mysql",
+    "type": "library",
+    "description": "DB Abstract to bind model classes to MySQL Tables",
+    "keywords": [
+        "leedch",
+        "mysql",
+        "phpunit",
+        "abstract",
+        "database",
+        "model"
+    ],
+    "homepage": "https://github.com/leedave/resource-mysql.git",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "David Lee",
+            "email": "leed@leed.ch",
+            "homepage": "https://www.leed.ch/",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php" : "~7.0|~7.1",
+        "leedch/logger": "^1.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^6.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Leedch\\Mysql\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Leedch\\Mysql\\": "tests"
+        }
+    },
+    "scripts": {
+        "test": "phpunit"
+    },
+    "config": {
+        "sort-packages": true
+    }
+}
