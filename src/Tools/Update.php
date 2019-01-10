@@ -31,12 +31,24 @@ class Update extends Mysql
      */
     public function updateDb()
     {
+        $this->createUpdateTableIfNotExists();
         $this->getProcessedFiles();
         
         $path = leedch_resourceMysqlUpdateFolder;
         $files = $this->findNewFiles($path);
         
         $this->processNewFiles($files);
+    }
+    
+    protected function createUpdateTableIfNotExists() 
+    {
+        $sql = "CREATE TABLE IF NOT EXISTS `".$this->getTableName()."` ("
+                . "`id` INT NOT NULL AUTO_INCREMENT COMMENT 'Primary Key' , "
+                . "`name` VARCHAR(255) NOT NULL COMMENT 'File Name' , "
+                . "`folder` VARCHAR(255) NOT NULL COMMENT 'Folder Path' , "
+                . "`createDate` DATETIME NOT NULL COMMENT 'Execution Date' , "
+                . "PRIMARY KEY (`id`)) ENGINE = InnoDB;";
+        $this->db->query($sql);
     }
     
     /**

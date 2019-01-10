@@ -15,7 +15,8 @@ use Leedch\Mysql\Log\MysqlLog;
  *
  * @author leed
  */
-abstract class Mysql {
+abstract class Mysql 
+{
     
     protected $host;
     protected $database;
