@@ -167,6 +167,8 @@ class Update extends Mysql
             '..',
         ];
         
+        $path = str_replace(static::getDocRoot(), "", realpath($path));
+        
         foreach ($arrFolders as $file) {
             //No Folder Defaults
             if (in_array($file, $arrSkip)) {
