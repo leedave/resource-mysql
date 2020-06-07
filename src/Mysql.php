@@ -368,7 +368,7 @@ abstract class Mysql
             $strLimit = "LIMIT ".implode(",", $arrLimit)." ";
         }
         
-        $what = "`".implode($arrWhat, "`,`")."`";
+        $what = "`".implode("`,`", $arrWhat)."`";
         $sql = "SELECT ".$what." "
             . "FROM `".$this->tableName."` "
             . $strWhere

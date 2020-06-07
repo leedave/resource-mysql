@@ -40,6 +40,12 @@ class Update extends Mysql
         $this->processNewFiles($files);
     }
     
+    protected static function getDocRoot() : string 
+    {
+        $docroot = __DIR__ . '/../../../../../';
+        return realpath($docroot)."/";
+    }
+    
     protected function createUpdateTableIfNotExists() 
     {
         $sql = "CREATE TABLE IF NOT EXISTS `".$this->getTableName()."` ("
@@ -90,6 +96,8 @@ class Update extends Mysql
         $fileName = array_pop($arrFile);
         $folder = implode(DIRECTORY_SEPARATOR, $arrFile).DIRECTORY_SEPARATOR;
         
+        $folder = str_replace(static::getDocRoot(), "", realpath($folder));
+        
         $tmp = new Update();
         $tmp->name = $fileName;
         $tmp->folder = $folder;
@@ -130,6 +138,18 @@ class Update extends Mysql
         
         foreach ($arrResult as $row) {
             $this->knownUpdateFiles[$row['id']] = $row['folder'].$row['name'];
+            $this->cleanFolderIfInOldFormat($row);
+        }
+    }
+    
+    protected function cleanFolderIfInOldFormat(array $row) 
+    {
+        $docroot = static::getDocRoot();
+        if (isset($row['folder']) && strpos($row['folder'], $docroot) === 0) {
+            $entry = new Update();
+            $entry->load($row['id']);
+            $entry->folder = str_replace($docroot, "", realpath($row['folder']));
+            $entry->save();
         }
     }
     
