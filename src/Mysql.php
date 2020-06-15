@@ -156,7 +156,7 @@ abstract class Mysql
             return false;
         }
         $pkName = $this->primaryKey;
-        if ((int) $this->$pkName > 0) {
+        if (isset($this->$pkName) && (int) $this->$pkName > 0) {
             $this->updateEntry();
         } else {
             $this->createEntry();
