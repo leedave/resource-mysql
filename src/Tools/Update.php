@@ -100,7 +100,7 @@ class Update extends Mysql
         
         $tmp = new Update();
         $tmp->name = $fileName;
-        $tmp->folder = $folder;
+        $tmp->folder = $folder."/";
         $tmp->createDate = strftime("%Y-%m-%d %H:%M:%S");
         $tmp->save();
         
@@ -148,7 +148,7 @@ class Update extends Mysql
         if (isset($row['folder']) && strpos($row['folder'], $docroot) === 0) {
             $entry = new Update();
             $entry->load($row['id']);
-            $entry->folder = str_replace($docroot, "", realpath($row['folder']));
+            $entry->folder = str_replace($docroot, "", realpath($row['folder']))."/";
             $entry->save();
         }
     }
@@ -167,7 +167,7 @@ class Update extends Mysql
             '..',
         ];
         
-        $path = str_replace(static::getDocRoot(), "", realpath($path));
+        //$path = str_replace(static::getDocRoot(), "", realpath($path));
         
         foreach ($arrFolders as $file) {
             //No Folder Defaults
@@ -185,7 +185,8 @@ class Update extends Mysql
         
         //Remove file from list if already processed
         foreach($arrReturn as $key => $file) {
-            if (in_array($file, $this->knownUpdateFiles)) {
+            $filePathShort = str_replace(static::getDocRoot(), "", realpath($file));
+            if (in_array($filePathShort, $this->knownUpdateFiles)) {
                 unset($arrReturn[$key]);
             }
         }
