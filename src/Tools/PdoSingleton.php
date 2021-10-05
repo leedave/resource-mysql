@@ -32,7 +32,7 @@ class PdoSingleton
     {
         $hash = md5(implode(";", $arrParams));
         if(!isset($this->arrConnections[$hash])){
-            $pdo = new PDO('mysql:'.implode(";", $arrParams), $username, $password);
+            $pdo = new PDO(implode(";", $arrParams), $username, $password);
             $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $this->arrConnections[$hash] = $pdo;
             return $this->arrConnections[$hash];
