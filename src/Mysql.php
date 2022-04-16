@@ -501,4 +501,30 @@ abstract class Mysql
             $this->$key = $val;
         }
     }
+    
+    public function query(string $sql) : array
+    {
+        $sql = $this->fixSqlQueryDetails($sql);
+        $stmt = $this->db->query($sql);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $rows;
+    }
+    
+    public function execute(string $sql) 
+    {
+        $sql = $this->fixSqlQueryDetails($sql);
+        $result = $this->db->exec($sql);
+        return $result;
+    }
+    
+    /**
+     * Some Servers don't accept `*`, so we replace it with *
+     * @param string $sql
+     * @return string
+     */
+    protected function fixSqlQueryDetails(string $sql) : string 
+    {
+        $response = str_replace("`*`", "*", $sql);
+        return $response;
+    }
 }
