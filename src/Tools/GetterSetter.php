@@ -49,7 +49,7 @@ class GetterSetter extends Mysql
             . '    return ('.$phpType.') $this->'.$field.";\n"
             .  "}\n"
             .  "\n"
-            .  "function set". ucwords($field)."((".$phpType.") $".$field.")\n"
+            .  "function set". ucwords($field)."(".$phpType." $".$field.")\n"
             . "{\n"
             . '    $this->'.$field.' = $'.$field.";\n"
             . "}\n"
