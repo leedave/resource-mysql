@@ -44,12 +44,12 @@ class GetterSetter extends Mysql
         $columnTypes = static::getTableColumnTypes();
         $phpType = in_array($type, $columnTypes)?$columnTypes[$type]:"string";
         
-        return "function get". ucwords($field)."(): ".$phpType."\n"
+        return "public function get". ucwords($field)."(): ".$phpType."\n"
             .  "{\n"
             . '    return ('.$phpType.') $this->'.$field.";\n"
             .  "}\n"
             .  "\n"
-            .  "function set". ucwords($field)."(".$phpType." $".$field.")\n"
+            .  "public function set". ucwords($field)."(".$phpType." $".$field.")\n"
             . "{\n"
             . '    $this->'.$field.' = $'.$field.";\n"
             . "}\n"
