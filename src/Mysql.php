@@ -10,14 +10,14 @@ use Leedch\Mysql\Log\MysqlLog;
 
 /**
  * This class acts as a resource handler for other classes, it should allow them
- * to save their data without knowing anything about the source, thus be a 
+ * to save their data without knowing anything about the source, thus be a
  * database abstraction level
  *
  * @author leed
  */
-abstract class Mysql 
+abstract class Mysql
 {
-    
+
     protected $host;
     protected $database;
     protected $username;
@@ -27,7 +27,7 @@ abstract class Mysql
     /* @var $db \PDO */
     protected $db;
     protected $log;
-    
+
     protected $primaryKey = "id";
 
     /**
@@ -41,11 +41,11 @@ abstract class Mysql
         $this->password = leedch_resourceMysqlPassword;
         $this->charset = leedch_resourceMysqlCharset;
         $this->log = new MysqlLog();
-    
+
         $this->tableName = $this->getTableName();
         $this->connect();
     }
-    
+
     /**
      * This method must return the name of the table associated with the class
      */
@@ -59,7 +59,7 @@ abstract class Mysql
     {
         $this->host = $host;
     }
-    
+
     /**
      * Sets $this->database
      * @param string $database
@@ -67,16 +67,16 @@ abstract class Mysql
     public function setDatabase(string $database) {
         $this->database = $database;
     }
-    
+
     /**
      * Sets $this->user
      * @param string $user
      */
-    public function setUser(string $user) 
+    public function setUser(string $user)
     {
         $this->user = $user;
     }
-    
+
     /**
      * Sets $this->password
      * @param string $password
@@ -85,7 +85,7 @@ abstract class Mysql
     {
         $this->password = $password;
     }
-    
+
     /**
      * Sets $this->charset
      * @param string $charset
@@ -94,7 +94,7 @@ abstract class Mysql
     {
         $this->charset = $charset;
     }
-    
+
     /**
      * Sets $this->tableName
      * @param string $tableName
@@ -103,21 +103,21 @@ abstract class Mysql
     {
         $this->tableName = $tableName;
     }
-    
+
     /**
      * Connect to MySql DB using constant params
      */
     public function connect()
     {
         $arrParams = [
-            'mysql:host='.$this->host,
+            'host='.$this->host,
             'dbname='.$this->database,
             'charset='.$this->charset,
         ];
-        
+
         $this->db = PdoSingleton::getInstance()->getConnection($arrParams, $this->username, $this->password);
     }
-    
+
     /**
      * checks if $this->tableName is set
      * @return boolean
@@ -129,7 +129,7 @@ abstract class Mysql
         }
         return false;
     }
-        
+
     /**
      * Returns Columns in table
      * @return array
@@ -139,13 +139,13 @@ abstract class Mysql
         if (!$this->isTableNameSet()) {
             return [];
         }
-        
+
         $sql = "SHOW COLUMNS FROM `".$this->tableName."`";
         $stmt = $this->db->query($sql);
         $arrResult = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return $arrResult;
     }
-    
+
     /**
      * Save if new, update if primary key isset
      * @return bool
@@ -163,7 +163,7 @@ abstract class Mysql
         }
         return true;
     }
-    
+
     /**
      * Delete Row from DB Table
      * @return int
@@ -174,7 +174,7 @@ abstract class Mysql
             . "WHERE `".$this->primaryKey."` = '".$this->id."';";
         return $this->db->exec($sql);
     }
-    
+
     /**
      * Inset a new Row into DB Table
      */
@@ -183,33 +183,33 @@ abstract class Mysql
         $arrColumns = $this->getTableColumns();
         $arrColumnNames = [];
         $arrColumnTypes = [];
-        
+
         foreach ($arrColumns as $column) {
             $arrColumnNames[] = $column['Field'];
             $arrColumnTypes[] = $column['Type'];
         }
-        
+
         $sql = 'INSERT INTO `'.$this->tableName.'` '
             . '(`'.implode('`, `', $arrColumnNames).'`) '
             . 'VALUES '
             . '(:'.implode(', :', $arrColumnNames).')';
-        
+
         $arrInsert = [];
         for ($i = 0; $i < count($arrColumnNames); $i++) {
             $name = $arrColumnNames[$i];
             $value = isset($this->$name)?$this->$name:"";
-            if (substr($arrColumnTypes[$i], 0, 3) == 'int') {
+            if (substr((string) $arrColumnTypes[$i], 0, 3) == 'int') {
                 $value = (int) $value;
             } elseif ($arrColumnTypes[$i] == 'datetime') {
-                $value = strftime("%Y-%m-%d %H:%M:%S", strtotime($value));
+                $value = date("Y-m-d", strtotime($value));
             }
             $arrInsert[':'.$name] = $value;
         }
-        
-        
+
+
         $this->db->beginTransaction();
         $stmt = $this->db->prepare($sql);
-        
+
         try {
             $stmt->execute($arrInsert);
             $this->db->commit();
@@ -223,7 +223,7 @@ abstract class Mysql
             );
         }
     }
-    
+
     /**
      * Updates Row
      */
@@ -233,26 +233,26 @@ abstract class Mysql
         $arrUpdates = [];
         $arrColumnNames = [];
         $arrColumnTypes = [];
-        
+
         foreach ($arrColumns as $column) {
             $arrColumnNames[] = $column['Field'];
             $arrColumnTypes[] = $column['Type'];
             $arrUpdates[] = "`".$column['Field']."` = :".$column['Field'];
         }
-        
+
         $pkName = $this->primaryKey;
         $pkVal = $this->$pkName;
-        
+
         $sql = 'UPDATE `'.$this->tableName.'` '
             . 'SET '.implode(", ", $arrUpdates).' '
             . 'WHERE `'.$pkName."` = '".$pkVal."';"
             ;
-        
+
         $arrInsert = $this->updatePrepareStatementArray($arrColumnNames, $arrColumnTypes);
-        
+
         $this->db->beginTransaction();
         $stmt = $this->db->prepare($sql);
-        
+
         try {
             $stmt->execute($arrInsert);
             $this->db->commit();
@@ -266,17 +266,17 @@ abstract class Mysql
             );
         }
     }
-    
+
     /**
      * Returns an array of pattern [':name' => 'value'] for updating current row
      * using PDO prepared statements
-     * 
+     *
      * @param array $arrColumnNames
      * @param array $arrColumnTypes
      * @return array
      */
     protected function updatePrepareStatementArray(
-        array $arrColumnNames, 
+        array $arrColumnNames,
         array $arrColumnTypes
     ) : array
     {
@@ -284,16 +284,16 @@ abstract class Mysql
         for ($i = 0; $i < count($arrColumnNames); $i++) {
             $name = $arrColumnNames[$i];
             $value = isset($this->$name)?$this->$name:"";
-            if (substr($arrColumnTypes[$i], 0, 3) == 'int') {
+            if (substr((string) $arrColumnTypes[$i], 0, 3) == 'int') {
                 $value = (int) $value;
             } elseif ($arrColumnTypes[$i] == 'datetime') {
-                $value = strftime("%Y-%m-%d %H:%M:%S", strtotime($value));
+                $value = date("Y-m-d H:i:s", strtotime($value));
             }
             $arrInsert[':'.$name] = $value;
         }
         return $arrInsert;
     }
-    
+
     /**
      * Testing Method, do not use
      */
@@ -316,7 +316,7 @@ abstract class Mysql
                 [
                     ":name" => "Baby",
                     ":description" => "Born just now",
-                    ":createDate" => strftime("%Y-%m-%d %H:%M:%S")
+                    ":createDate" => date("Y-m-d H:i:s")
                 ]
             ];
 
@@ -329,12 +329,12 @@ abstract class Mysql
             $this->db->rollBack();
             $this->log->critical('Error Saving to mySQL: '.$e->getMessage());
         }
-    
+
     }
-    
+
     /**
      * Simple SELECT Query, no transactions, fetch multiple entries
-     * 
+     *
      * @param array $arrWhat
      * @param array $arrWhere array of strings Example: "`name` LIKE 'Dave'"
      * @param array $arrOrder
@@ -343,9 +343,9 @@ abstract class Mysql
      * @throws Exception
      */
     public function getAllRows(
-        array $arrWhat = ['*'], 
-        array $arrWhere = [], 
-        array $arrOrder = ['`id` ASC'], 
+        array $arrWhat = ['*'],
+        array $arrWhere = [],
+        array $arrOrder = ['`id` ASC'],
         array $arrLimit = []
     ) : array
     {
@@ -355,19 +355,19 @@ abstract class Mysql
         $strWhere = "";
         $strOrder = "";
         $strLimit = "";
-        
+
         if (count($arrWhere) > 0) {
             $strWhere = "WHERE ".implode(" AND ", $arrWhere)." ";
         }
-        
+
         if (count($arrOrder) > 0) {
             $strOrder = "ORDER BY ".implode(", ", $arrOrder)." ";
         }
-        
+
         if (count($arrLimit) > 0) {
             $strLimit = "LIMIT ".implode(",", $arrLimit)." ";
         }
-        
+
         $whatTemp = "`".implode("`,`", $arrWhat)."`";
         $what = str_replace("`*`", "*", $whatTemp);
         $sql = "SELECT ".$what." "
@@ -384,7 +384,7 @@ abstract class Mysql
         }
         return $arrRows;
     }
-    
+
     /**
      * Get Rows from Table using a Prepared Statement
      * @param array $arrWhat
@@ -394,9 +394,9 @@ abstract class Mysql
      * @return array
      */
     public function loadByPrepStmt(
-        array $arrWhat = ['*'], 
-        array $arrWhere = [], 
-        array $arrOrder = ['`id` ASC'], 
+        array $arrWhat = ['*'],
+        array $arrWhere = [],
+        array $arrOrder = ['`id` ASC'],
         array $arrLimit = []
     ) : array
     {
@@ -405,9 +405,12 @@ abstract class Mysql
         if (count($arrWhere) > 0) {
             $arrWhereNames = [];
             foreach ($arrWhere as $key => $val) {
-                if (is_array($val) && $val['operator'] === "like") {
+                if (is_array($val) && strtolower($val['operator']) === "like") {
                     $arrWhereNames[] = "`".$key."` LIKE :".$key;
                     $arrStmt[':'.$key] = $val['value'];
+                } elseif (is_array($val) && strtolower($val['operator']) === "in" && is_array($val['value'])) {
+                    $arrWhereNames[] = "`" . $key . "` IN ('" . implode("','", $val['value']) . "')";
+                    // $arrStmt[':'.$key] = $val['value'];
                 } else {
                     $arrWhereNames[] = "`".$key."` = :".$key;
                     $arrStmt[':'.$key] = $val;
@@ -415,12 +418,12 @@ abstract class Mysql
             }
             $strWhere = "WHERE ". implode(" AND ", $arrWhereNames) . " ";
         }
-        
+
         $strOrder = "";
         if (count($arrOrder) > 0) {
             $strOrder = "ORDER BY ".implode(", ", $arrOrder) . " ";
         }
-        
+
         $strLimit = "";
         if (isset($arrLimit[0])) {
             $strLimit .= "LIMIT ".((int) $arrLimit[0]);
@@ -432,18 +435,18 @@ abstract class Mysql
             . $strWhere
             . $strOrder
             . $strLimit;
-        
+
         $stmt = $this->db->prepare($sql);
         $stmt->execute($arrStmt);
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
+
         if (!$result) {
             return [];
         }
-        
+
         return $result;
     }
-    
+
     /**
      * Extension to LoadByPrepStmt, this will return result as JSON instead of array
      * @param array $arrWhat
@@ -453,9 +456,9 @@ abstract class Mysql
      * @return string JSON
      */
     public function getJsonRows(
-        array $arrWhat = ['*'], 
-        array $arrWhere = [], 
-        array $arrOrder = ['`id` ASC'], 
+        array $arrWhat = ['*'],
+        array $arrWhere = [],
+        array $arrOrder = ['`id` ASC'],
         array $arrLimit = []
     ) : string
     {
@@ -463,7 +466,7 @@ abstract class Mysql
         $json = json_encode($rows, JSON_UNESCAPED_UNICODE);
         return $json;
     }
-    
+
     /**
      * Load specific entry from DB
      * @param int $id primary key
@@ -475,24 +478,24 @@ abstract class Mysql
             . "WHERE `".$this->primaryKey."` = '".$id."'"
             . "LIMIT 0,1;";
         $stmt = $this->db->query($sql);
-        
+
         try {
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
         } catch (Exception $ex) {
             $this->log->crit('Could not find requested entry in mySQL: '.$sql."\n".$ex->getMessage());
         }
-        
+
         if (!is_array($row)) {
             return;
         }
-        
+
         $this->loadWithData($row);
     }
-    
+
     /**
      * Use this when iterating a * sql call for multiple rows, it saves doing another
      * sql call for data you already have
-     * 
+     *
      * @param array $data
      */
     public function loadWithData(array $data)
@@ -501,7 +504,7 @@ abstract class Mysql
             $this->$key = $val;
         }
     }
-    
+
     public function query(string $sql) : array
     {
         $sql = $this->fixSqlQueryDetails($sql);
@@ -509,20 +512,20 @@ abstract class Mysql
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return $rows;
     }
-    
-    public function execute(string $sql) 
+
+    public function execute(string $sql)
     {
         $sql = $this->fixSqlQueryDetails($sql);
         $result = $this->db->exec($sql);
         return $result;
     }
-    
+
     /**
      * Some Servers don't accept `*`, so we replace it with *
      * @param string $sql
      * @return string
      */
-    protected function fixSqlQueryDetails(string $sql) : string 
+    protected function fixSqlQueryDetails(string $sql) : string
     {
         $response = str_replace("`*`", "*", $sql);
         return $response;

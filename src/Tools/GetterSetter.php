@@ -17,12 +17,12 @@ use Leedch\Mysql\Mysql;
  */
 class GetterSetter extends Mysql
 {
-    protected function getTableName() : string
+    protected function getTableName(): string
     {
         return "";
     }
-    
-    public function generateGettersAndSetters(string $tableName): string 
+
+    public function generateGettersAndSetters(string $tableName): string
     {
         $response = "";
         $this->setTableName($tableName);
@@ -32,7 +32,7 @@ class GetterSetter extends Mysql
         }
         return $response;
     }
-    
+
     protected static function generateGetterAndSetter(array $columnData): string
     {
         if (!isset($columnData['Type'])) {
@@ -43,7 +43,7 @@ class GetterSetter extends Mysql
         $field = $columnData['Field'];
         $columnTypes = static::getTableColumnTypes();
         $phpType = in_array($type, $columnTypes)?$columnTypes[$type]:"string";
-        
+
         return "public function get". ucwords($field)."(): ".$phpType."\n"
             .  "{\n"
             . '    return ('.$phpType.') $this->'.$field.";\n"
@@ -56,7 +56,7 @@ class GetterSetter extends Mysql
             . "\n"
             ;
     }
-    
+
     public static function getTableColumnTypes(): array
     {
         return [
