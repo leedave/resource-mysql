@@ -200,8 +200,10 @@ abstract class Mysql
             $value = isset($this->$name)?$this->$name:"";
             if (substr((string) $arrColumnTypes[$i], 0, 3) == 'int') {
                 $value = (int) $value;
-            } elseif ($arrColumnTypes[$i] == 'datetime') {
+            } elseif ($arrColumnTypes[$i] == 'date') {
                 $value = date("Y-m-d", strtotime($value));
+            } elseif ($arrColumnTypes[$i] == 'datetime') {
+                $value = date("Y-m-d H:i:s", strtotime($value));
             }
             $arrInsert[':'.$name] = $value;
         }
