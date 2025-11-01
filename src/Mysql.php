@@ -545,7 +545,6 @@ abstract class Mysql
         $sql = "SELECT LAST_INSERT_ID();";
         $result = $this->db->query($sql);
         $rows = $result->fetch(PDO::FETCH_ASSOC);
-        print_r($rows);
         if (count($rows) > 0) {
             return (int) array_pop($rows);
         }
