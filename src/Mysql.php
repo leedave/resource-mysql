@@ -215,6 +215,8 @@ abstract class Mysql
         try {
             $stmt->execute($arrInsert);
             $this->db->commit();
+            $pkName = $this->primaryKey;
+            $this->$pkName = $this->getLastCreatedId();
         } catch (PDOException $ex) {
             $this->db->rollBack();
             $this->log->critical(
@@ -531,5 +533,22 @@ abstract class Mysql
     {
         $response = str_replace("`*`", "*", $sql);
         return $response;
+    }
+    
+    /**
+     * Related to the current session, safe if others using the db. 
+     * Must be run right after the INSERT
+     * @return int
+     */
+    public function getLastCreatedId(): int 
+    {
+        $sql = "SELECT LAST_INSERT_ID();";
+        $result = $this->db->query($sql);
+        $rows = $result->fetch(PDO::FETCH_ASSOC);
+        print_r($rows);
+        if (count($rows) > 0) {
+            return (int) array_pop($rows);
+        }
+        return 0;
     }
 }

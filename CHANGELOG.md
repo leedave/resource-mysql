@@ -4,6 +4,10 @@ All Notable changes to `leech/resource-mysql` will be documented in this file.
 
 Updates should follow the [Keep a CHANGELOG](http://keepachangelog.com/) principles.
 
+## [1.1.0] - 2025-11-01 ##
+- Support only >= PHP8.4
+- Add Id to newly created entries
+
 ## [1.0.16] - 2017-12-30 ##
 - Support PHP8.2
 
